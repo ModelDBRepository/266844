@@ -1,0 +1,27 @@
+// --------------------------------------------------------------
+// replace init procedure to have sufficiently long prepulse
+// --------------------------------------------------------------
+
+proc init() {local saveDt, i
+
+
+  make_synback_t(seedy.repick(),seedy.repick())
+	init_esyn()
+	init_isyn()
+	init_pp()
+
+  finitialize(v_init)
+  fcurrent()
+  saveDt = dt
+  dt = 10
+  for i=0,99 fadvance()
+  dt = saveDt
+}
+proc DoIt() {local i, j
+
+  init()
+  for i=0,999 {
+    for j=0,0.1/dt-1 fadvance()
+  }
+}
+

@@ -1,0 +1,92 @@
+nsyn = 1
+sigmasyn = 0 // in ms
+maxsyn = 100
+ii=0
+forsec dendritic_only {ii=ii+1}
+maxesyn = ii
+maxisyn = ii
+maxtime = 100
+syngmax = 100
+egmax = 0.001
+igmax = 0.003
+nmda2ampa = 1
+objref 	r,p,er,ep,syn[nsyn],seedy
+objref esyn[maxesyn], isyn[maxisyn]
+objref       pploc[70]
+objref  randsecsyn
+pploc= new Vector()
+seedy = new Random()
+
+gnmdamax=0
+gampamax=0
+
+dummy = seedy.uniform(0,1000)
+
+r = new Random(7) // reproducible with seed
+p = new Random(13)
+// but not sure if repick does replace as well
+
+er = new Random()
+dummy = er.discunif(0,maxesyn-1)
+ep = new Random()
+dummy = ep.discunif(0, maxtime)
+for i=1,69 { pploc[i]= new SectionList ()}
+
+dendA1S_0000011_0 pploc[1].append()
+
+r = new Random()
+p = new Random()
+
+proc random_nonrep_syn() {
+	dummy = p.normal(0, sigmasyn^2)
+	// draw random numbers without redrawing same ones
+	randsecsyn = new Vector()
+	dummy = r.discunif(0,maxsyn-1)
+	for k=1,nsyn {
+	  exists = 0
+	  while (exists>-1) {
+	    dummy = r.repick()
+	    exists = randsecsyn.indwhere("==",dummy)
+	  }
+	  randsecsyn.append(dummy)
+	}
+}
+// insert pulse packet synapses and init onset time
+proc init_pp() {local i
+	dummy = int(r.uniform(0.1,0.9)) // not 0 or 1, see below
+	dummy = p.normal(0, sigmasyn^2)
+	objref syn[nsyn]
+
+		m=0
+	for i=1, nsyn{
+
+		m=m+1
+		y=0.99
+		forsec pploc [i]{ syn[m-1] = new glutamate(y)
+				syn[m-1].del=1020 + 0.72*(i-1)
+				syn[m-1].gnmdamax=gnmdamax
+				syn[m-1].gampamax=gampamax
+				syn[m-1].ntar=nmda2ampa
+				}
+		}
+}//initpp
+
+
+objref stfunc,shape
+shape=new Shape(0)
+shape.view(-150, 0, 300, 300, 1000, 0, 800, 800)
+shape.show(0)
+proc make_shape_plot(){//DRAWS THE POINTS ON THE CELL
+	shape.point_mark_remove()
+
+	for i=0,nsyn-1{
+		//shape.point_mark(esyn[i], 5, 4, 5)
+	}
+	for i=0,nsyn-1{
+		//shape.point_mark(isyn[i], 3, 4, 5)
+	}
+	for i=0,nsyn-1{
+		shape.point_mark(syn[i], 2, 4, 4)
+	}
+	access somaA
+}///END SHAPE
